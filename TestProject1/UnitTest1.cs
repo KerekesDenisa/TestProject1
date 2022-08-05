@@ -4,6 +4,7 @@ using OpenQA.Selenium.Support.UI;
 
 namespace TestProject1
 {
+    [TestFixture]
     public class Tests
     {
         IWebDriver webDriver;
@@ -25,41 +26,55 @@ namespace TestProject1
             NavigateBack();
             NavigateForward();
             Refresh();
-            Quit();
-            Assert.That("http://qa1magento.dev.evozon.com/men.html", Is.EqualTo(""));
+            Assert.That(webDriver.Url, Is.EqualTo("http://qa1magento.dev.evozon.com/men.html"));
 
         }
-
-
+        [Test]
         public void AccountTest()
         {
             StartChromeDriver();
             ClickAccount();
-            Quit();
+            Assert.AreEqual(MyAccount(), "My Account");
         }
+        [Test]
         public void LanguagesTest()
         {
             StartChromeDriver();
             ListLanquages(1);
-            Quit();
+            ClickLanguages();
+            Assert.AreEqual(French(),"French");
         }
-        public void SearchTest()
-        {
-            StartChromeDriver();
-            ClearSearch();
-            AddInSearch("woman");
-            Quit();
+
+
+         [Test]
+         public void SearchTest()
+         {
+             StartChromeDriver();
+             ClearSearch();
+             AddInSearch("woman");
+             Assert.That("http://qa1magento.dev.evozon.com/catalogsearch/result/?q=woman", Is.EqualTo(webDriver.Url));
         }
-        public void NewProductList()
+        
+         [Test]
+         public void NewProductList()
+         {
+             StartChromeDriver();
+             ListNewProducts();
+            Assert.AreEqual(5, ListNewProducts());
+            //PT TETSTUL ASTA DECOMENTAM LINIA CU ENV QA2
+         }
+         [Test]
+
+         public void NavbarTest()
+         {
+             StartChromeDriver();
+             NavigateNavbar("SALE");
+             Assert.That("http://qa1magento.dev.evozon.com/sale.html", Is.EqualTo(webDriver.Url));
+         }
+
+        [TearDown]
+        public void After()
         {
-            StartChromeDriver();
-            ListNewProducts();
-            Quit();
-        }
-        public void NavbarTest()
-        {
-            StartChromeDriver();
-            NavigateNavbar("SALE");
             Quit();
         }
 
@@ -132,6 +147,11 @@ namespace TestProject1
             IWebElement clickLogo = webDriver.FindElement(By.CssSelector(".skip-link.skip-account"));
             clickLogo.Click();
         }
+        public string MyAccount()
+        {
+            IWebElement myAccount = webDriver.FindElement(By.CssSelector("#header-account .links .first"));
+            return myAccount.Text;
+        }
         public void ListLanquages(int number)
         {
             IWebElement language = webDriver.FindElement(By.Id("select-language"));
@@ -141,6 +161,19 @@ namespace TestProject1
             Console.WriteLine("Number Lanquages List " + l.Options.Count);
 
             l.SelectByIndex(number);
+
+        }
+        public void ClickLanguages()
+        {
+            IWebElement clickLanguages = webDriver.FindElement(By.Id("select-language"));
+            clickLanguages.Click();
+        }
+
+        public string French()
+        {
+            IWebElement list = webDriver.FindElement(By.CssSelector("#select-language"));
+            SelectElement french = new SelectElement(list);
+            return french.SelectedOption.Text;
         }
         public void ClearSearch()
         {
@@ -154,14 +187,17 @@ namespace TestProject1
             searchBar.Submit();
         }
 
-        public void ListNewProducts()
+        public int ListNewProducts()
         {
             IList<IWebElement> newProducts = webDriver.FindElements(By.CssSelector(".products-grid.products-grid .item"));
 
             Console.WriteLine("Number NewProducts List " + newProducts.Count());
 
             foreach (var i in newProducts)
+            {
                 Console.WriteLine(i);
+            }
+            return newProducts.Count();
         }
 
     }
